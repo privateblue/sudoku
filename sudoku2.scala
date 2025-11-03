@@ -24,7 +24,8 @@ val patterns: Vector[Vector[Int]] = generatePatterns()
 case class Mask(lo: Long, hi: Long):
   inline def intersect(other: Mask): Boolean =
     (lo & other.lo) != 0L || (hi & other.hi) != 0L
-  inline def union(other: Mask): Mask = Mask(lo | other.lo, hi | other.hi)
+  inline def union(other: Mask): Mask = 
+    Mask(lo | other.lo, hi | other.hi)
 
   def toPattern: Vector[Int] =
     val arr = Array.fill[Int](S)(-1)
@@ -156,15 +157,15 @@ case class Grid(grid: Array[Array[Int]]):
 
 @main def run() =
   val solution = Grid("""
-                           |200000000
-                           |900000180
-                           |807043065
-                           |006500004
-                           |000000006
-                           |090070001
-                           |000830000
-                           |040065000
-                           |050200070""".stripMargin('|')).solve()
+                        |200000000
+                        |900000180
+                        |807043065
+                        |006500004
+                        |000000006
+                        |090070001
+                        |000830000
+                        |040065000
+                        |050200070""".stripMargin('|')).solve()
   println(
     solution.map(_.show).getOrElse("no solution found")
   )
