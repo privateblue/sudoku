@@ -1,18 +1,20 @@
-package sudoku
+package generalized
 
-val B = 3
+val X = 3
 
-val S = B * B
+val Y = 2
+
+val S = X * Y
 
 def blockOf(n: Int): Vector[Int] =
-  1.to(S).grouped(B).find(_.contains(n)).get.toVector
+  1.to(S).grouped(X).find(_.contains(n)).get.toVector
 
 def generatePatterns(v: Vector[Int] = Vector.empty): Vector[Vector[Int]] =
   v match
     case _ if v.size == S => Vector(v)
     case _                =>
       val exclude =
-        0.until(v.size % B).flatMap(i => blockOf(v(v.size - 1 - i))) ++ v
+        0.until(v.size % Y).flatMap(i => blockOf(v(v.size - 1 - i))) ++ v
       1.to(S)
         .filterNot(exclude.contains)
         .map(v.appended)
@@ -21,26 +23,31 @@ def generatePatterns(v: Vector[Int] = Vector.empty): Vector[Vector[Int]] =
 
 val patterns: Vector[Vector[Int]] = generatePatterns()
 
-opaque type Grid = Vector[Vector[Int]]
+//
+
+opaque type Grid = Vector[Int]
 
 object Grid:
   def apply(input: String): Grid =
     input
       .split("\n")
       .filterNot(_.isBlank())
-      .map(_.toVector.map(_.toString().toInt))
+      .flatMap(_.map(_.toString().toInt))
       .toVector
 
 extension (grid: Grid)
   def show: String =
-    grid.map(_.mkString).mkString("\n")
+    grid.grouped(S).map(_.mkString).mkString("\n")
 
   def set(value: Int, pattern: Vector[Int]): Grid =
-    grid.zip(pattern).map { case (row, i) => row.updated(i - 1, value) }
+    pattern.zipWithIndex.foldLeft(grid) { 
+      case (g, (col, row)) => g.updated(row * S + col - 1, value) 
+      }
 
-  def compatible(value: Int, pattern: Vector[Int]): Boolean =
-    grid.zip(pattern).forall { case (row, i) =>
-      row(i - 1) == value || (row(i - 1) == 0 && !row.contains(value))
+  def compatible(value: Int, pattern: Vector[Int]): Boolean = 
+    pattern.zipWithIndex.forall { case (col, row) =>
+      grid(row * S + col - 1) == value || 
+      (grid(row * S + col - 1) == 0 && !grid.slice(row * S, row * S + S).contains(value))
     }
 
   def compatiblePatterns: Vector[Vector[Vector[Int]]] =
@@ -58,15 +65,12 @@ extension (grid: Grid)
 
 @main def run() =
   val solutions = Grid("""
-                        |200000000
-                        |900000180
-                        |807043065
-                        |006500004
-                        |000000006
-                        |090070001
-                        |000830000
-                        |040065000
-                        |050200070""".stripMargin('|')).solve()
+                        |516020
+                        |000100
+                        |602000
+                        |000000
+                        |000240
+                        |100065""".stripMargin('|')).solve()
 
   println(
     solutions.map(_.show).mkString("\n\n")
